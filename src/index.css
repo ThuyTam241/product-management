@@ -1,3 +1,11 @@
 html {
   background-color: #FAFAFA;
 }
+
+#root {
+  max-width: fit-content !important;
+}
+
+.ant-dropdown-menu-item-selected {
+  background-color: #2B2B2B30 !important;
+}

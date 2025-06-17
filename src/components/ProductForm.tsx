@@ -16,7 +16,11 @@ import {
 } from "antd";
 import dayjs from "dayjs";
 import { useEffect, useRef, useState } from "react";
-import type { Product, Status } from "../types/IProduct";
+import type { Product } from "../types/IProduct";
+import { Category } from "../enums/category.enum";
+import { Status } from "../enums/status.enum";
+import { mockProviders } from "../mocks/providers.mock";
+import { mockTags } from "../mocks/tags.mock";
 
 let index = 0;
 
@@ -31,14 +35,7 @@ export const ProductForm = ({
   setIsModalOpen: (value: boolean) => void;
   onSubmitForm: (value: Product) => void;
 }) => {
-  const [tagList, setTagList] = useState<string[]>([
-    "hot",
-    "new",
-    "sale",
-    "bestseller",
-    "business",
-    "skincare",
-  ]);
+  const [tagList, setTagList] = useState<string[]>(mockTags);
   const [tagName, setTagName] = useState<string>("");
   const form = Form.useForm<Product>()[0];
   const inputRef = useRef<InputRef>(null);
@@ -59,40 +56,17 @@ export const ProductForm = ({
     }, 0);
   };
 
-  const categories = [
-    "electronics",
-    "footwear",
-    "computers",
-    "audio",
-    "wearables",
-    "food",
-    "cameras",
-    "accessories",
-    "cosmetics",
-    "pharmaceuticals",
-    "nutrition",
-    "personal_care",
-  ].map((it) => ({ value: it, label: it }));
-
-  const providers = [
-    "Apple Inc.",
-    "Samsung",
-    "Nike",
-    "Sony",
-    "GoPro",
-    "Razer",
-    "Lenovo",
-    "Yakult Vietnam",
-    "GSK",
-    "Beiersdorf",
-    "Abbott",
-    "Colgate-Palmolive",
-  ].map((it) => ({
-    value: it,
-    label: it,
+  const categoryOptions = Object.entries(Category).map(([key, value]) => ({
+    label: key,
+    value,
   }));
 
-  const statuses: Status[] = ["in_stock", "out_of_stock"];
+  const statusOptions = Object.entries(Status).map(([key, value]) => ({
+    label: key.replace(/([A-Z])/g, " $1").trim(),
+    value,
+  }));
+
+  const providerOptions = mockProviders.map((it) => ({ value: it, label: it }));
 
   useEffect(() => {
     if (initialValue) {
@@ -126,7 +100,7 @@ export const ProductForm = ({
     >
       <Form
         form={form}
-        labelCol={{ span: 5 }}
+        labelCol={{ span: 6 }}
         labelAlign="left"
         onFinish={onSubmitForm}
       >
@@ -134,6 +108,7 @@ export const ProductForm = ({
           <Upload
             maxCount={1}
             beforeUpload={() => false}
+            onChange={({ fileList }) => setFileList(fileList)}
             listType="picture"
             fileList={fileList}
           >
@@ -141,17 +116,28 @@ export const ProductForm = ({
           </Upload>
         </Form.Item>
 
-        <Form.Item label="Name" name="name" rules={[{ required: true }]}>
+        <Form.Item
+          label="Name"
+          name="name"
+          rules={[
+            { required: true, message: "Name is required" },
+            {
+              type: "string",
+              max: 100,
+              message: "Name cannot exceed 100 characters",
+            },
+          ]}
+        >
           <Input placeholder="Enter your name" />
         </Form.Item>
 
         <Form.Item
           label="Provider"
           name="provider"
-          rules={[{ required: true }]}
+          rules={[{ required: true, message: "Provider is required" }]}
         >
           <Select placeholder="select your provider">
-            {providers.map((option) => (
+            {providerOptions.map((option) => (
               <Select.Option key={option.value} value={option.value}>
                 {option.label}
               </Select.Option>
@@ -166,10 +152,10 @@ export const ProductForm = ({
         <Form.Item
           label="Category"
           name="category"
-          rules={[{ required: true }]}
+          rules={[{ required: true, message: "Category is required" }]}
         >
           <Select placeholder="select your category">
-            {categories.map((option) => (
+            {categoryOptions.map((option) => (
               <Select.Option key={option.value} value={option.value}>
                 {option.label}
               </Select.Option>
@@ -180,13 +166,40 @@ export const ProductForm = ({
         <Form.Item
           label="Quantity"
           name="quantity"
-          rules={[{ required: true }]}
+          rules={[
+            { required: true, message: "Quantity is required" },
+            {
+              type: "number",
+              min: 1,
+              message: "Quantity must be at least 1",
+            },
+          ]}
         >
-          <InputNumber min={1} placeholder="Enter your quantity" />
+          <InputNumber
+            placeholder="Enter your quantity"
+            style={{ width: 160 }}
+          />
         </Form.Item>
 
-        <Form.Item label="Price" name="price" rules={[{ required: true }]}>
-          <InputNumber min={0} placeholder="Enter your price" />
+        <Form.Item
+          label="Price/item"
+          name="price"
+          rules={[
+            { required: true, message: "Price is required" },
+            {
+              type: "number",
+              min: 0,
+              message: "Price must be at least 0",
+            },
+          ]}
+        >
+          <InputNumber<number>
+            step={0.01}
+            addonBefore="$"
+            formatter={(value) => `${Number(value).toFixed(2)}`}
+            parser={(value) => value as unknown as number}
+            placeholder="Enter your price"
+          />
         </Form.Item>
 
         <Form.Item label="Tags" name="tags">
@@ -215,11 +228,15 @@ export const ProductForm = ({
           />
         </Form.Item>
 
-        <Form.Item label="Status" name="status" rules={[{ required: true }]}>
+        <Form.Item
+          label="Status"
+          name="status"
+          rules={[{ required: true, message: "Status is required" }]}
+        >
           <Radio.Group>
-            {statuses.map((status) => (
-              <Radio key={status} value={status}>
-                {status.replace(/_/g, " ")}
+            {statusOptions.map((option) => (
+              <Radio key={option.value} value={option.value}>
+                {option.label}
               </Radio>
             ))}
           </Radio.Group>
@@ -231,7 +248,10 @@ export const ProductForm = ({
         >
           <Button
             variant="outlined"
-            onClick={() => setIsModalOpen(false)}
+            onClick={() => {
+              setIsModalOpen(false);
+              form.resetFields();
+            }}
             style={{ borderColor: "#d9d9d9", color: "rgba(0, 0, 0, 0.88)" }}
           >
             Cancel

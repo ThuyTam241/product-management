@@ -1,15 +1,16 @@
 import "./App.css";
-import { Button, ConfigProvider, message, Space } from "antd";
+import { Button, App as AntdApp, Space } from "antd";
 import { ProductList } from "./components/ProductList";
 import { ProductForm } from "./components/ProductForm";
 import { useState } from "react";
 import type { Product } from "./types/IProduct";
-import { mockProducts } from "./data/mockProducts";
+import { mockProducts } from "./mocks/products.mock";
 import { Dayjs } from "dayjs";
 
 function App() {
   const [products, setProducts] = useState<Product[]>(mockProducts);
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+  const { message } = AntdApp.useApp();
 
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
 
@@ -19,9 +20,16 @@ function App() {
   };
 
   const onSubmitForm = (formData: Product) => {
+    const file = formData.thumbnail as any;
+    const resolvedThumbnail = file?.file
+      ? URL.createObjectURL(file.file)
+      : "";
     const payload = {
       ...formData,
-      expiredAt: formData.expiredAt ? (formData.expiredAt as Dayjs).format("YYYY-MM-DD") : ''
+      thumbnail: resolvedThumbnail,
+      expiredAt: formData.expiredAt
+        ? (formData.expiredAt as Dayjs).format("YYYY-MM-DD")
+        : "",
     };
     if (editingProduct?.id) {
       setEditingProduct((prev) => ({ ...prev, ...payload }));
@@ -42,20 +50,7 @@ function App() {
   };
 
   return (
-    <ConfigProvider
-      theme={{
-        token: {
-          colorPrimary: "#2B2B2B",
-          colorText: "#2B2B2B",
-          controlOutline: "#2B2B2B40",
-        },
-        components: {
-          Select: {
-            optionSelectedBg: "#2B2B2B30",
-          },
-        },
-      }}
-    >
+    <>
       <Space size="middle" direction="vertical" style={{ width: "100%" }}>
         <div style={{ display: "flex", justifyContent: "flex-end" }}>
           <Button
@@ -85,7 +80,7 @@ function App() {
         setIsModalOpen={setIsModalOpen}
         onSubmitForm={onSubmitForm}
       />
-    </ConfigProvider>
+    </>
   );
 }
 

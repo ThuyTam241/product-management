@@ -1,20 +1,6 @@
 import type { Dayjs } from "dayjs";
-
-export type Category =
-  | "electronics"
-  | "footwear"
-  | "computers"
-  | "audio"
-  | "wearables"
-  | "food"
-  | "cameras"
-  | "accessories"
-  | "cosmetics"
-  | "pharmaceuticals"
-  | "nutrition"
-  | "personal_care";
-
-export type Status = "in_stock" | "out_of_stock";
+import type { Category } from "../enums/category.enum";
+import type { Status } from "../enums/status.enum";
 
 export interface Product {
   readonly id: string;
