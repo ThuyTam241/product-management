@@ -1,5 +1,6 @@
 import { Modal } from "antd";
 import type { Product } from "../types/IProduct";
+import { useRef } from "react";
 
 export const ProductModal = ({
   initialValue = null,
@@ -10,6 +11,8 @@ export const ProductModal = ({
   isModalOpen: boolean;
   setIsModalOpen: (value: boolean) => void;
 }) => {
+  const iframeRef = useRef<HTMLIFrameElement | null>(null);
+
   return (
     <Modal
       title={
@@ -17,7 +20,16 @@ export const ProductModal = ({
       }
       open={isModalOpen}
       onCancel={() => setIsModalOpen(false)}
+      width={640}
       footer={null}
-    ></Modal>
+    >
+      <iframe
+        ref={iframeRef}
+        width={"100%"}
+        height={560}
+        style={{ border: "none" }}
+        src="http://localhost:3001"
+      ></iframe>
+    </Modal>
   );
 };
