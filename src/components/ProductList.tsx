@@ -41,11 +41,11 @@ type DataIndex = keyof Product;
 export const ProductList = ({
   products,
   setProducts,
-  openProductForm,
+  sendDataToProductForm,
 }: {
   products: Product[];
   setProducts: React.Dispatch<React.SetStateAction<Product[]>>;
-  openProductForm: (isOpen: boolean, product: Product | null) => void;
+  sendDataToProductForm: (product: Product | null) => void;
 }) => {
   const { message } = AntdApp.useApp();
   const searchInput = useRef<InputRef>(null);
@@ -304,7 +304,7 @@ export const ProductList = ({
           <Button
             style={{ backgroundColor: "transparent" }}
             type="text"
-            onClick={() => openProductForm(true, record)}
+            onClick={() => sendDataToProductForm(record)}
             icon={<EditOutlined style={{ fontSize: "20px" }} />}
           />
           <Popconfirm
